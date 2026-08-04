@@ -17,7 +17,7 @@ Product reference for salary math and tables. This doc focuses on the **full Sal
 
 **UI rules:** Results column stacks **in-hand panel** → composition. Variable pay is visually separate in the form (dashed/amber block); right column copy stresses **guaranteed vs illustrative** in-hand.
 
-**Handoff:** Users who need the full modeled component table use **`/salary/detailed`** → **`/salary/breakdown`** (sections 1+ below).
+**Handoff:** Users who need the full modeled component table use **`/salary/detailed`** → **`/salary/premium/breakdown`** (sections 1+ below).
 
 ---
 
@@ -127,7 +127,7 @@ Type column keeps **EARNING** / **DEDUCTION** / **TAX FREE** / **EMPLOYER (CTC)*
 ### 7a. Component breakup header & planning handoff (`salary-breakdown-view.tsx`)
 
 - **Back:** **Back to salary inputs** → `/salary`.
-- **Component breakup card:** Title + short payslip-alignment copy; **Download PDF**; **quick-link** pills (icon + label): Monthly plan (`/lifestyle`), EMI planner, Wealth forecast (`useTieredPremiumLinks`).
+- **Component breakup card:** Title + short payslip-alignment copy; **Download PDF**; **quick-link** pills (icon + label): Monthly plan (`/salary/premium/lifestyle`), EMI planner, Wealth forecast (`useTieredPremiumLinks`).
 - **After the table + cash path:** **Allocation benchmarks** (illustrative bars); then **Plan from this breakdown** — three **link cards** (`BreakdownNextStepCard`) to the same three destinations with fuller copy. Keeps the table focused while still connecting to surplus, debt, and forecast flows.
 
 ---

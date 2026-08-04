@@ -104,13 +104,14 @@ Webhook endpoint (optional): `POST /api/billing/razorpay/webhook`
 
 - **Landing** — Marketing hero and CTAs into salary flow.
 - **`/salary`** — Free-tier **calculator** (fixed/variable, dual in-hand, regime) or premium **CTC → breakdown** depending on env and login.
-- **`/salary/detailed`** — Manual + mock document path, recents (premium).
-- **`/salary/breakdown`** — KPIs, editable component table, export **CSV/PDF**, deep links via workspace cookies.
+- **`/salary/detailed`** — Manual + document path, recents (premium).
+- **`/salary/premium/breakdown`** — KPIs, editable component table, export **CSV/PDF**, deep links via workspace cookies.
+- **`/salary/premium/lifestyle`** — Monthly plan sliders and surplus (premium).
+- **`/salary/premium/*`** — Offer comparison, wealth forecast, EMI analyzer (premium). Legacy `/lifestyle`, `/salary/breakdown`, `/premium/*` redirect via `next.config.ts`.
 - **`/salary/history`** — Saved salary list and deletes.
-- **`/lifestyle`** — Monthly plan sliders and surplus (premium).
-- **`/premium/*`** — Offer comparison, wealth forecast, EMI analyzer (premium).
 - **`/paywall`** — Pricing modal shell on free tier; tool routing via query params.
 - **`/profile`** — Profile fields backed by `profiles` table.
+- **`/billing/upgrade`** — Deep link into Premium checkout.
 - **Auth** — Login, signup, forgot/reset password (Supabase).
 
 ---
@@ -119,82 +120,51 @@ Webhook endpoint (optional): `POST /api/billing/razorpay/webhook`
 
 ```
 .
-├── package.json                 # Root scripts: dev/build/lint/start → ./app
+├── package.json                 # Root scripts: dev/build/lint/test → ./app (+ Playwright)
+├── playwright.config.ts
+├── TESTING.md
 ├── README.md                    # This file
-├── .gitignore                   # Root ignores (.env, .DS_Store)
+├── .gitignore
 │
 ├── app/                         # Next.js application (deploy this directory)
 │   ├── package.json
-│   ├── next.config.ts           # Next config + security headers (frame deny, nosniff, etc.)
-│   ├── middleware.ts          # Supabase session; premium + auth gates
+│   ├── next.config.ts           # Redirects + security headers
+│   ├── middleware.ts
 │   ├── tsconfig.json
-│   ├── components.json         # shadcn/ui config
-│   ├── .env.example            # Template for Supabase + access mode (copy → .env.local)
-│   ├── .gitignore
-│   ├── README.md               # App-specific commands & routes
-│   ├── AGENTS.md               # Pointer to docs/ for contributors
-│   ├── CLAUDE.md               # Short pointer for Claude / IDE
-│   ├── public/
-│   │   └── brand/inhand-logo.svg
+│   ├── components.json          # shadcn/ui
+│   ├── vitest.config.ts
+│   ├── .env.example
+│   ├── README.md / AGENTS.md / CLAUDE.md
+│   ├── public/brand/inhand-logo.svg
 │   └── src/
-│       ├── app/                 # App Router routes (thin pages)
-│       │   ├── layout.tsx       # Fonts, providers, Navbar, Footer, modal host
-│       │   ├── globals.css
-│       │   ├── icon.svg
-│       │   ├── page.tsx         # Landing
+│       ├── app/                 # App Router (thin pages + API)
+│       │   ├── layout.tsx / page.tsx / globals.css
+│       │   ├── api/             # auth/email-exists; billing/razorpay/*; billing/status
+│       │   ├── auth/            # callback + reset-password
 │       │   ├── login/, signup/, forgot-password/
-│       │   ├── auth/reset-password/
-│       │   ├── profile/
-│       │   ├── paywall/         # Paywall shell + unlocked variant
-│       │   ├── lifestyle/
-│       │   ├── salary/          # page, detailed, breakdown, history
-│       │   └── premium/         # layout guard, offer-comparison, wealth-forecast, emi-analyzer
+│       │   ├── profile/, billing/, paywall/
+│       │   ├── privacy/, security/, terms/
+│       │   └── salary/          # page, detailed, history, premium/*
 │       ├── components/
-│       │   ├── ui/              # Primitives (button, dialog, sheet, table, …)
-│       │   ├── shared/          # Reusable compositions (breakdown panels, export, stat-card, …)
-│       │   ├── features/        # Feature screens (salary, calculator, premium, pricing, landing)
-│       │   ├── layout/          # Navbar, footer, nav items, history sheet, dialogs
-│       │   ├── auth/            # Auth shell, Supabase missing message
-│       │   └── providers/       # Query, AuthSync, premium modal host, workspace cookies sync
-│       └── lib/
-│           ├── access/          # Product/premium access helpers
-│           ├── auth/            # premium-entitlement (server)
-│           ├── config/          # access-mode, premium tool metadata
-│           ├── constants/       # Tax slabs, city tiers, salary catalog, auth UI copy
-│           ├── dom/             # Focus helpers
-│           ├── hooks/           # Cloud sync, scroll restore, tiered links, history delete, …
-│           ├── mocks/           # Mock salary/offer document parsers
-│           ├── motion/          # Landing motion presets
-│           ├── notify/          # App toasts wrapper
-│           ├── offer-comparison/# Verdict copy / filter helpers (PDF-safe strings)
-│           ├── persistence/   # Save-flight, workspace session cookies
-│           ├── salary/session-save/  # Draft vs baseline PATCH logic
-│           ├── scheduling/      # deferExecution
-│           ├── schemas/         # Zod: auth, CTC, lifestyle, offer
-│           ├── server/          # Premium redirect helpers for RSC
-│           ├── simple-salary-calculator/  # Free /salary math + CTC sync
-│           ├── stores/          # Zustand stores
-│           ├── supabase/        # Clients, middleware session, queries, hooks, generated types
-│           ├── types/           # Domain TypeScript types
-│           └── utils/           # Salary engine, tax, EMI, wealth, export CSV, formatters, …
+│       │   ├── ui/              # shadcn primitives
+│       │   ├── shared/          # Composed UI
+│       │   ├── features/        # Screen compositions
+│       │   ├── layout/          # Navbar, footer, history sheet
+│       │   ├── auth/
+│       │   └── providers/       # Query, AuthSync, cloud/cookie sync, modal host
+│       ├── lib/                 # Domain, stores, Supabase, server helpers
+│       └── __tests__/           # Vitest unit tests
 │
-└── docs/                        # Product & engineering documentation
-    ├── AGENTS.md
-    ├── ARCHITECTURE.md
-    ├── APPLICATION_CONCEPT.md   # Vision & positioning (tiers → PRODUCT_FLOW)
-    ├── DESIGN_SYSTEM.md
-    ├── IMPLEMENTATION_PLAN.md   # Historical phases (see note at top)
-    ├── PRODUCT_FLOW.md
-    ├── SALARY_COMPONENTS.md
-    ├── inhand-backend-api-spec.md
-    ├── inhand-client-sync-ux.md
-    ├── inhand-database-design.md
-    └── adr/
-        ├── ADR-001-frontend-architecture.md
-        └── ADR-002-session-save.md
+├── supabase/migrations/         # Postgres schema + RLS / billing
+├── tests/e2e/                   # Playwright specs
+│
+└── docs/                        # Product & engineering docs
+    ├── AGENTS.md / ARCHITECTURE.md / PRODUCT_FLOW.md / DESIGN_SYSTEM.md
+    ├── inhand-client-sync-ux.md / inhand-database-design.md / …
+    └── adr/                     # ADR-001 … ADR-004
 ```
 
-*(Exact file counts change as features land; use `find app/src -type f` for an exhaustive list.)*
+*(Exact file counts change as features land.)*
 
 ---
 
@@ -206,15 +176,13 @@ Webhook endpoint (optional): `POST /api/billing/razorpay/webhook`
 | `npm run build` | root or `app/` | Production build |
 | `npm run start` | `app/` | Serve production build |
 | `npm run lint` | root or `app/` | ESLint |
+| `npm run test:unit` | root | Vitest (unit) |
+| `npm run test:e2e` | root | Playwright |
 
 ---
 
-## What we fixed in this audit (summary)
+## Repo hygiene
 
-- **Removed dead code:** unused demo auth seed (`auth.demo.ts`), unused `session-cookie.ts`, empty `docs/API.md`.
-- **Types:** dropped unused `LocalAccountRecord`.
-- **Docs:** aligned **ARCHITECTURE**, **AGENTS**, **PRODUCT_FLOW**, **APPLICATION_CONCEPT**, **IMPLEMENTATION_PLAN** with **Supabase** auth and real middleware/route rules; fixed **app/AGENTS.md** / **CLAUDE.md** links to **`docs/`**.
-- **Security:** baseline **HTTP security headers** in `next.config.ts`; **`.env.example`** for safe onboarding; root **`.gitignore`** for stray env files.
-- **npm audit:** 0 vulnerabilities at time of audit.
+Source of truth for layout is **`app/src/app`** (routes), **`app/src/components`** (UI), and **`app/src/lib`** (domain + data). Do not reintroduce parallel `frontend/` / `backend/` / `shared/` trees under `app/src` unless the team deliberately adopts that modular split again.
 
 For deeper database and API contracts, see **`docs/inhand-database-design.md`** and **`docs/inhand-backend-api-spec.md`**.

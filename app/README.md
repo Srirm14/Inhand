@@ -16,24 +16,26 @@ Logic lives in `src/lib/config/access-mode.ts`.
 
 | When | Behavior |
 |------|----------|
-| Env **unset** or `NEXT_PUBLIC_ACCESS_MODE=default` | **Free tier** (calculator on `/salary`; `/lifestyle`, `/salary/breakdown`, `/salary/detailed` redirect to `/salary`; `/premium/*` → paywall). Same in dev and production. |
-| `NEXT_PUBLIC_ACCESS_MODE=premium` | Full premium routes (still requires login where middleware says so). |
+| Env **unset** or `NEXT_PUBLIC_ACCESS_MODE=default` | **Free tier** (calculator on `/salary`; premium workspace under `/salary/premium/*` requires signed-in premium or paywall). Same in dev and production. |
+| `NEXT_PUBLIC_ACCESS_MODE=premium` | Full premium routes unlocked for local QA (login still required where middleware says so). |
 
 Restart the dev server after changing `.env.local`.
 
 ## Routes
 
 - `/` — Marketing landing  
-- `/salary` — **Premium env:** `CtcInputForm` → breakdown (legacy). **Default/paywall env:** free fixed/variable calculator only (in-hand + composition).  
-- `/salary/detailed`, `/salary/breakdown`, `/lifestyle` — **Premium env only** (`NEXT_PUBLIC_ACCESS_MODE=premium`). Otherwise middleware + server **redirect → `/salary`**. With premium env, **signed-in** still required (middleware).  
-- `/salary/detailed` — Detailed CTC + document upload + recents → breakdown  
-- `/salary/breakdown` — KPI row, component breakup, plan cards (EMI, forecast, monthly plan)  
-- `/lifestyle` — Monthly plan (spending + surplus)  
-- `/salary/premium/offer-comparison` — **Manual** or **upload** 2–3 offers; same CTC split pattern as `/salary` per card (PDF parse where configured)  
-- `/salary/premium/wealth-forecast` — 5/10/20 yr projection (sliders + table)  
+- `/salary` — **Premium env:** `CtcInputForm` → breakdown. **Default/paywall env:** free fixed/variable calculator only.  
+- `/salary/detailed` — Detailed CTC + document upload + recents → premium breakdown  
+- `/salary/premium/breakdown` — KPI row, component breakup, plan cards (EMI, forecast, monthly plan)  
+- `/salary/premium/lifestyle` — Monthly plan (spending + surplus)  
+- `/salary/premium/offer-comparison` — Manual or upload 2–3 offers  
+- `/salary/premium/wealth-forecast` — 5/10/20 yr projection  
 - `/salary/premium/emi-analyzer` — EMI + DTI vs in-hand & monthly plan  
-- Legacy `/premium/*` and `/salary/breakdown` (non-premium paths) — **`next.config.ts`** redirects to the canonical **`/salary/premium/*`** routes (no separate `/premium` hub page)  
-- `/paywall` — **Free tier:** opens the same global **Premium plans** modal as in-app CTAs (page is a minimal shell). **Premium env:** handled by the paywall page (unlocked redirect). Closing the modal while on `/paywall` returns to `/salary`.
+- `/salary/history` — Saved salary sessions  
+- Legacy `/premium/*`, `/lifestyle`, `/salary/breakdown` — **`next.config.ts`** redirects to **`/salary/premium/*`**  
+- `/paywall` — Free tier: global Premium plans modal shell. Closing returns to `/salary`.  
+- `/billing/upgrade` — Premium checkout deep link  
+- `/profile` — Profile (+ `/profile/billing`)
 
 ## Premium plans modal (free tier)
 
